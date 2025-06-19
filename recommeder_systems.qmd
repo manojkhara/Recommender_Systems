@@ -1,0 +1,21 @@
+---
+title: "Recommeder Systems"
+# subtitle: "A systematic approach to understanding and dealing with missing data"
+institute: "Indian Institute of Technology, Madras"
+author: "Manoj Khara"
+format:
+  revealjs: 
+    # theme: blood
+    navigation-mode: vertical
+    controls: true
+    slide-number: true
+    chalkboard: 
+      buttons: true
+    preview-links: auto
+    incremental: true
+    # logo: images/quarto.png
+    css: styles.css
+    # footer: '[https://{{< meta prerelease-subdomain >}}quarto.org](https://{{< meta prerelease-subdomain >}}quarto.org)'
+resources:
+  - demo.pdf
+---
