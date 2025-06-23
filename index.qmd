@@ -1,0 +1,437 @@
+---
+title: "Handling Missing Data"
+# subtitle: "A systematic approach to understanding and dealing with missing data"
+institute: "Indian Institute of Technology, Madras"
+author: "Alape Aniruddha"
+format:
+  revealjs: 
+    # theme: blood
+    navigation-mode: vertical
+    controls: true
+    slide-number: true
+    chalkboard: 
+      buttons: true
+    preview-links: auto
+    incremental: true
+    # logo: images/quarto.png
+    css: styles.css
+    # footer: '[https://{{< meta prerelease-subdomain >}}quarto.org](https://{{< meta prerelease-subdomain >}}quarto.org)'
+resources:
+  - demo.pdf
+---
+
+## Guiding Questions
+
+::: incremental
+-   What are missing values?
+-   How can we detect missing values in a dataset?
+-   What causes a dataset to have missing values?
+-   Why is it important to handle missing data?
+-   What are the different strategies to handle missing values?
+:::
+
+## Can you identify the missing values?
+
+. . .
+
+| Roll   | Age | Country  | Course   | Score | Result  |
+|--------|-----|----------|--------|-----|----------|
+| 1001  | 30  | USA      | ?  | 15  | F      |
+| 1002    | 0  | France   | Math  | 9999  | Pass      |
+| 1003  | 27  | China       | English  | 78  | NA      |
+| 1004  | 30  |   -    | NaN  | 22  | Fail      |
+| 1005    | 25  | Sweden   | Science  | 65  | Unknown      |
+| 1006  |   | UK       | NULL  | 48  | Pass      |
+
+::: {.fragment .fade-up}
+NaN, NULL,  , NA, ?, -, Unknown, 0, 9999
+:::
+
+## Missing values in large datasets {.smaller}
+
+. . . 
+
+```{python}
+import pandas as pd
+import numpy as np
+
+data = {
+    'Roll': [1001,1002,1003,1004,1005,1006,1007,1008,1009,1010,1011,1012,1013,1014,1015,1016,1017,1018,1019,1020],
+    'Age': [25, '?', np.nan, 45, 22, np.nan, 29, '?', 28, 35, np.nan, 40, 36, 35, 45, 35, 22, np.nan, np.nan, '?'],
+    'State': ['AP', 'AR', 'AS', np.nan, 'CG', 'GA', np.nan, 'HR', 'JK', 'JH', 'KA', np.nan, 'MP', '?', 'MN', 'ML', 'MZ', 'NL', 'OR', np.nan],
+    'Score': [85.0, 90.5, 78.0, 88.0, np.nan, 92.0, 74.0, 81.5, 79.0, np.nan, 95.0, 87.0, np.nan, 83.0, 89.5, 91.0, 76.0, np.nan, 84.0, 80.5]
+}
+
+df = pd.DataFrame(data)
+df.head(10)
+```
+
+## Missing values in large datasets
+
+. . .
+
+``` {.python code-line-numbers="1"}
+df.info()
+df.isna()
+df.isna().sum()
+df["Age"].value_counts()
+df["State"].unique()
+```
+
+<br>
+
+. . .
+
+``` {.python}
+# Consider a dataframe named df
+df.info()
+```
+
+```{python}
+df.info();
+```
+
+## Missing values in large datasets
+
+``` {.python code-line-numbers="2"}
+df.info()
+df.isna()
+df.isna().sum()
+df["Age"].value_counts()
+df["State"].unique()
+```
+
+<br>
+
+. . .
+
+``` {.python}
+# Consider a dataframe named df
+df.isna()
+```
+
+```{python}
+df.isna()
+```
+
+## Missing values in large datasets
+
+``` {.python code-line-numbers="3"}
+df.info()
+df.isna()
+df.isna().sum()
+df["Age"].value_counts()
+df["State"].unique()
+```
+<br>
+
+. . .
+
+``` {.python}
+# Consider a dataframe named df
+df.isna().sum()
+```
+
+```{python}
+df.isna().sum()
+```
+
+## Missing values in large datasets
+
+``` {.python code-line-numbers="4"}
+df.info()
+df.isna()
+df.isna().sum()
+df["Age"].value_counts()
+df["State"].unique()
+```
+
+<br>
+
+. . .
+
+``` {.python}
+# Consider a dataframe named df
+df["Age"].value_counts()
+```
+
+```{python}
+df["Age"].value_counts()
+```
+
+## Missing values in large datasets
+
+``` {.python code-line-numbers="5"}
+df.info()
+df.isna()
+df.isna().sum()
+df["Age"].value_counts()
+df["State"].unique()
+```
+
+<br>
+
+. . .
+
+``` {.python}
+# Consider a dataframe named df
+df["State"].unique()
+```
+
+```{python}
+df["State"].unique()
+```
+
+## Visualize the missing values
+
+. . .
+
+``` {.python}
+sns.heatmap(df_2.isnull(), cbar=False, cmap='viridis', yticklabels=False)
+
+plt.title('Missing Data Heatmap')
+plt.show()
+```
+
+```{python}
+np.random.seed(42)
+
+n_rows = 150
+
+user_ids = np.arange(1001, 1001 + n_rows)
+
+classes = np.random.choice(['A', 'B', 'C', 'D'], size=n_rows)
+
+scores = np.clip(np.random.normal(loc=60, scale=15, size=n_rows), 0, 100)
+
+ages = np.clip(np.random.normal(loc=30, scale=10, size=n_rows), 18, 80)
+
+df_2 = pd.DataFrame({
+    'UserID': user_ids,
+    'Class': classes,
+    'Score': scores,
+    'Age': ages
+})
+
+for col in ['Class', 'Score', 'Age']:
+    n_missing = int(0.15 * n_rows)
+    missing_indices = np.random.choice(n_rows, size=n_missing, replace=False)
+    df_2.loc[missing_indices, col] = np.nan
+```
+
+. . .
+```{python}
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# plt.figure(figsize=(12, 6))
+
+sns.heatmap(df_2.isnull(), 
+            cbar=False, 
+            cmap='viridis', 
+            yticklabels=False)
+
+plt.title('Missing Data Heatmap')
+plt.show()
+```
+
+##
+
+::: {.fragment}
+**Q: What are missing values?** 
+::: 
+
+::: {.fragment}
+Missing values represent the absence of data for a particular record
+:::
+
+::: {.fragment}
+**Q: What causes a dataset to have missing values?** 
+::: 
+
+::: {.fragment}
+Human error during data entry / transfer, sensor or machine failure, data corruption, unresponded queries in survey are few causes among many others
+:::
+
+::: {.fragment}
+**Q: Why is it important to handle missing data?** 
+::: 
+
+- Challenges during implementation of Machine Learning Algorithms
+- Poor quality data leading to biased / incorrect results
+
+
+## Strategies to handle missing values
+
+- Find using other sources
+- Drop missing data 
+- Fill in with a constant value
+- Fill in with a measure of Central tendency
+- Fill in by considering similar datapoints
+
+## Finding missing values from other sources
+
+- Extract from other features - Age & DOB, Week & Timestamp, Gender & Honorifics
+- Missing information that exists on the public domain - Cars, Electronics, Movies, Sports
+
+<br>
+
+. . .
+
+Takeaway - Data could be missing but not lost!
+
+## Dropping missing data
+
+- Large dataset with a small percentage of rows containing missing data
+- Columns with high proportion of missing values
+
+. . .
+
+<br>
+
+### Code snippets
+``` {.python code-line-numbers="1|2"}
+df.dropna()
+df.drop('column_name', inplace=True)
+```
+
+## Techniques to impute missing values
+
+. . .
+
+**Simple Imputer**
+
+. . .
+
+Replaces the missing value using a descriptive statistic among mean, median or most_frequent(mode) along each column, or using a constant value. 
+
+. . .
+
+<br>
+
+**KNN Imputer**
+
+. . .
+
+Each sample’s missing values are imputed using the mean value from n_neighbors nearest neighbors found in the training set.
+
+## Simple Imputer
+
+. . .
+
+``` {.python}
+import numpy as np
+from sklearn.impute import SimpleImputer
+
+X = [[np.nan, 2, 3], [4, np.nan, 6], [10, np.nan, 9]]
+
+mean_imputer = SimpleImputer(strategy="mean")
+mean_imputer.fit(X)
+
+mean_imputer.transform(X)
+```
+
+. . .
+
+<br>
+
+```{python}
+import numpy as np
+from sklearn.impute import SimpleImputer
+
+X = [[np.nan, 2, 3], [4, np.nan, 6], [10, np.nan, 9]]
+
+mean_imputer = SimpleImputer(strategy="mean")
+mean_imputer.fit(X)
+
+mean_imputer.transform(X)
+```
+
+## KNN Imputer 
+
+<!-- https://drive.google.com/drive/folders/1HfTP5cOXqnOYq4Aq1uHuoJH5y5L5d7YA -->
+
+. . .
+
+``` {.python}
+import numpy as np
+from sklearn.impute import KNNImputer
+
+X = [[1, 2, np.nan], [3, 4, 3], [np.nan, 6, 5], [8, 8, 7]]
+
+imputer = KNNImputer(n_neighbors=2)
+imputer.fit_transform(X)
+```
+
+. . .
+
+<br>
+
+```{python}
+import numpy as np
+from sklearn.impute import KNNImputer
+X = [[1, 2, np.nan], [3, 4, 3], [np.nan, 6, 5], [8, 8, 7]]
+imputer = KNNImputer(n_neighbors=2)
+imputer.fit_transform(X)
+```
+<!-- 
+## Other useful ideas
+
+- Use the correlation between features to impute missing data
+- For something like weight, the data is better imputed by considering only the few neighboring values (Time series stuff) -->
+
+## Consider the following scenario
+
+. . .
+
+Imagine you are analyzing the household income data across different neighborhoods in a city. You notice that for some areas, the income values are missing. 
+
+- This missingness might not be random. 
+- Relationship between locality and income
+
+. . .
+
+We can use a missingness indicator!
+
+## Scikit-Learn Documentation for Imputation
+
+<!-- ::: {style="text-align: center; margin-top: 1em"}
+[Imputing missing values](https://scikit-learn.org/stable/api/sklearn.impute.html){preview-link="true" style="text-align: center"}
+::: -->
+
+- [Simple Imputer](https://scikit-learn.org/stable/modules/generated/sklearn.impute.SimpleImputer.html#sklearn.impute.SimpleImputer){preview-link="true" style="text-align: center"}
+- [KNN Imputer](https://scikit-learn.org/stable/modules/generated/sklearn.impute.KNNImputer.html){preview-link="true" style="text-align: center"}
+- [Missingness Indicator](https://scikit-learn.org/stable/modules/generated/sklearn.impute.MissingIndicator.html){preview-link="true" style="text-align: center"}
+
+## Types of missingness {.smaller}
+
+::: {.panel-tabset}
+
+### MCAR
+
+#### Missing Completely At Random
+In situations characterized by Missing Completely At Random (MCAR), the absence of data occurs randomly and is unrelated to any variable in the dataset or the missing values themselves. The probability of missingness is same for all observations. There exists no underlying pattern to the missingness. The missing values are completely independent of other data. All statistical analysis performed on the dataset will remain unbiased in this case.
+
+For example, during data collection, if some responses were not collected due to a technical error, then the missing data is completely at random.
+
+### MAR
+
+#### Missing At Random
+
+In instances of Missing At Random (MAR), the absence of data can be entirely explained by the values of other known variables in the dataset. There exists some form of pattern in the missing values.
+
+For example, In a survey, women might be unwilling to disclose their age. Here the missingness of the variable age can be explained by another observed variable “gender”.
+
+### MNAR
+
+#### Missing Not At Random
+In this case, the missingness is neither MCAR nor MAR. The fact that a datapoint is missing is dependent on the value of the data point. In order to correct for the bias we would have to make modelling assumptions about the nature of the bias.
+
+For example, in a social survey where individuals are asked about their income, respondents may not disclose it if it is too high or too low. Thus the missingness in the feature income is directly related to the values of that feature.
+For example, if a patient’s measurement was not taken because the doctor felt he was too sick, that observation would not be MAR or MCAR. In this case the missing data mechanism causes our observed training data to give a distorted picture of the true population, and data imputation is dangerous in this instance.
+:::
+
+<!-- ## Final Takeaways -->
+
+

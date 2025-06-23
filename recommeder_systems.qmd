@@ -1,11 +1,11 @@
 ---
-title: "Recommeder Systems"
-# subtitle: "A systematic approach to understanding and dealing with missing data"
-institute: "Indian Institute of Technology, Madras"
+title: "Building a Collaborative Filtering Recommender System"
+subtitle: "A practical walkthrough of user-based and item-based collaborative filtering using Python"
 author: "Manoj Khara"
+institute: "Indian Institute of Technology, Madras"
 format:
-  revealjs: 
-    # theme: blood
+  revealjs:
+    theme: simple
     navigation-mode: vertical
     controls: true
     slide-number: true
@@ -13,9 +13,140 @@ format:
       buttons: true
     preview-links: auto
     incremental: true
-    # logo: images/quarto.png
     css: styles.css
-    # footer: '[https://{{< meta prerelease-subdomain >}}quarto.org](https://{{< meta prerelease-subdomain >}}quarto.org)'
+    transition: slide
 resources:
   - demo.pdf
 ---
+
+## Collaborative Filtering Recommendation System
+
+Collaborative filtering is a method of making automatic predictions (filtering) about the interests of a user by collecting preferences from many users.
+
+---
+
+## Types of Collaborative Filtering
+
+### 1. User-Based Collaborative Filtering
+
+Recommend items liked by similar users.
+
+#### Steps:
+- Create a user-item interaction matrix  
+- Compute user-user similarity (e.g., cosine, Pearson)  
+- Recommend items that similar users liked but the target user hasn't interacted with  
+
+---
+
+### 2. Item-Based Collaborative Filtering
+
+Recommend items similar to what the user already liked.
+#### Steps:
+- Create a user-item matrix  
+- Compute item-item similarity  
+- Recommend items similar to those rated highly by the user  
+
+---
+
+## Item-Based Collaborative Filtering: Python Implementation
+
+```python
+import pandas as pd
+from sklearn.metrics.pairwise import cosine_similarity
+
+# Sample user-item rating matrix
+data = {
+    'User1': [5, 3, 0, 1],
+    'User2': [4, 0, 0, 1],
+    'User3': [1, 1, 0, 5],
+    'User4': [1, 0, 0, 4],
+    'User5': [0, 1, 5, 4],
+}
+df = pd.DataFrame(data, index=['ItemA', 'ItemB', 'ItemC', 'ItemD'])
+df
+
+```
+--- 
+
+```python
+# Transpose to get item-user matrix
+item_user_matrix = df.T
+
+# Compute cosine similarity between items
+item_similarity = pd.DataFrame(
+    cosine_similarity(item_user_matrix.T),
+    index=item_user_matrix.columns,
+    columns=item_user_matrix.columns
+)
+
+print("Item Similarity Matrix:")
+print(item_similarity)
+
+# Recommend for User1 (rated ItemA=5, ItemB=3, ItemD=1)
+user_ratings = item_user_matrix.loc['User1']
+unseen_items = user_ratings[user_ratings == 0].index
+
+def predict_score(user_ratings, item_name):
+    sim_scores = item_similarity[item_name]
+    rated_items = user_ratings[user_ratings > 0].index
+    numerator = sum(user_ratings[item] * sim_scores[item] for item in rated_items)
+    denominator = sum(abs(sim_scores[item]) for item in rated_items)
+    return numerator / denominator if denominator != 0 else 0
+
+for item in unseen_items:
+    predicted_score = predict_score(user_ratings, item)
+    print(f"Predicted score for {item}: {predicted_score:.2f}")
+```
+
+## 🎯 Objective
+
+Learn how to implement collaborative filtering using **gradient descent**, with side-by-side **mathematical equations** and **Python code**.
+
+---
+
+## 📘 Notation
+
+- $$ y^{(i,j)} = \text{ rating given on movie } i \text{ by user } j  $$
+- $$ r(i,j) = 1 \text{ if user } j \text{ has rated movie } i \text{ otherwise } 0$$
+- $$w^{(j)}, b^{(j)} = \text{parameters for user j} $$ 
+- $$X^{(i)} = \text{ feature vector for movie } i $$
+
+---
+
+## Dimensions
+- n_items = number of items (e.g movies, books)
+- n_users = number of users
+- n_features = number of features (hyperparameter)
+- $$y^{(i,j)} \in \mathbb{R}^{n\_{\text{items}} \times n\_{\text{users}}}$$
+- $$r(i,j) \in \{0, 1\}^{n\_{\text{items}} \times n\_{\text{users}}}$$
+- $$ w^{(j)}  \in \mathbb{R}^{n\_{\text{users}} \times n\_{\text{features}}} , b^{(j)}  \in \mathbb{R}^{n\_{\text{users}}} $$
+- $$ X^{(i)}  \in \mathbb{R}^{n\_{\text{items}} \times n\_{\text{features}}} $$
+
+---
+
+##
+Below is a sample user-item rating matrix for 5 movies rated by 4 users.
+
+| Movie Title              | User 1 | User 2 | User 3 | User 4 |
+|--------------------------|--------|--------|--------|--------|
+| 3 Idiots                 | 5      | 4      | 5      | 3      |
+| Baahubali                | 4      | 5      | 4      | NA     |
+| Dangal                   | 5      | NA     | 3      | 4      |
+| RRR                      | 3      | 4      | NA     | 5      |
+| Pathaan                  | NA     | 2      | 3      | 4      |
+
+- Ratings range from 1 (worst) to 5 (best).
+- **NA** indicates that the user did not rate the movie.
+
+---
+## 
+$$ r(i,j) = 1 \text{ if user } j \text{ has rated movie } i \text{ otherwise } 0$$
+$$r(i,j) \in \{0, 1\}^{n\_{\text{items}} \times n\_{\text{users}}}$$
+
+| Movie Title              | User 1 | User 2 | User 3 | User 4 |
+|--------------------------|--------|--------|--------|--------|
+| 3 Idiots                 | 1      | 1      | 1      | 1      |
+| Baahubali                | 1      | 1      | 1      | [0]{style="color:red;"}       |
+| Dangal                   | 1      | [0]{style="color:red;"}      | 1      | 1      |
+| RRR                      | 1      | 1      | [0]{style="color:red;"}       | 1      |
+| Pathaan                  | [0]{style="color:red;"}       | 1      | 1      | 1      |

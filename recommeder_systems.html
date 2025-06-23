@@ -10,7 +10,7 @@
   <meta name="generator" content="quarto-1.7.32">
 
   <meta name="author" content="Manoj Khara">
-  <title>Recommeder Systems</title>
+  <title>Building a Collaborative Filtering Recommender System</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
@@ -28,8 +28,74 @@
       margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
       vertical-align: middle;
     }
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      { color: #003b4f; background-color: #f1f3f5; }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span { color: #003b4f; } /* Normal */
+    code span.al { color: #ad0000; } /* Alert */
+    code span.an { color: #5e5e5e; } /* Annotation */
+    code span.at { color: #657422; } /* Attribute */
+    code span.bn { color: #ad0000; } /* BaseN */
+    code span.bu { } /* BuiltIn */
+    code span.cf { color: #003b4f; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #20794d; } /* Char */
+    code span.cn { color: #8f5902; } /* Constant */
+    code span.co { color: #5e5e5e; } /* Comment */
+    code span.cv { color: #5e5e5e; font-style: italic; } /* CommentVar */
+    code span.do { color: #5e5e5e; font-style: italic; } /* Documentation */
+    code span.dt { color: #ad0000; } /* DataType */
+    code span.dv { color: #ad0000; } /* DecVal */
+    code span.er { color: #ad0000; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #ad0000; } /* Float */
+    code span.fu { color: #4758ab; } /* Function */
+    code span.im { color: #00769e; } /* Import */
+    code span.in { color: #5e5e5e; } /* Information */
+    code span.kw { color: #003b4f; font-weight: bold; } /* Keyword */
+    code span.op { color: #5e5e5e; } /* Operator */
+    code span.ot { color: #003b4f; } /* Other */
+    code span.pp { color: #ad0000; } /* Preprocessor */
+    code span.sc { color: #5e5e5e; } /* SpecialChar */
+    code span.ss { color: #20794d; } /* SpecialString */
+    code span.st { color: #20794d; } /* String */
+    code span.va { color: #111111; } /* Variable */
+    code span.vs { color: #20794d; } /* VerbatimString */
+    code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
   </style>
-  <link rel="stylesheet" href="recommeder_systems_files/libs/revealjs/dist/theme/quarto-f563837468303362081e247dddd440d0.css">
+  <link rel="stylesheet" href="recommeder_systems_files/libs/revealjs/dist/theme/quarto-2c1b5f745a11cfad616ebade4a4a7d24.css">
   <link rel="stylesheet" href="styles.css">
   <link href="recommeder_systems_files/libs/revealjs/plugin/quarto-line-highlight/line-highlight.css" rel="stylesheet">
   <link href="recommeder_systems_files/libs/revealjs/plugin/reveal-menu/menu.css" rel="stylesheet">
@@ -130,7 +196,8 @@
     <div class="slides">
 
 <section id="title-slide" class="quarto-title-block center">
-  <h1 class="title">Recommeder Systems</h1>
+  <h1 class="title">Building a Collaborative Filtering Recommender System</h1>
+  <p class="subtitle">A practical walkthrough of user-based and item-based collaborative filtering using Python</p>
 
 <div class="quarto-title-authors">
 <div class="quarto-title-author">
@@ -144,8 +211,215 @@ Manoj Khara
 </div>
 
 </section>
+<section id="collaborative-filtering-recommendation-system" class="slide level2">
+<h2>Collaborative Filtering Recommendation System</h2>
+<p>Collaborative filtering is a method of making automatic predictions (filtering) about the interests of a user by collecting preferences from many users.</p>
+</section>
+<section id="types-of-collaborative-filtering" class="slide level2">
+<h2>Types of Collaborative Filtering</h2>
+<h3 id="user-based-collaborative-filtering">1. User-Based Collaborative Filtering</h3>
+<p>Recommend items liked by similar users.</p>
+<h4 id="steps">Steps:</h4>
+<ul>
+<li class="fragment">Create a user-item interaction matrix<br>
+</li>
+<li class="fragment">Compute user-user similarity (e.g., cosine, Pearson)<br>
+</li>
+<li class="fragment">Recommend items that similar users liked but the target user hasn’t interacted with</li>
+</ul>
+</section>
 <section class="slide level2">
 
+<h3 id="item-based-collaborative-filtering">2. Item-Based Collaborative Filtering</h3>
+<p>Recommend items similar to what the user already liked. #### Steps: - Create a user-item matrix<br>
+- Compute item-item similarity<br>
+- Recommend items similar to those rated highly by the user</p>
+</section>
+<section id="item-based-collaborative-filtering-python-implementation" class="slide level2">
+<h2>Item-Based Collaborative Filtering: Python Implementation</h2>
+<div class="sourceCode" id="cb1"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href=""></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb1-2"><a href=""></a><span class="im">from</span> sklearn.metrics.pairwise <span class="im">import</span> cosine_similarity</span>
+<span id="cb1-3"><a href=""></a></span>
+<span id="cb1-4"><a href=""></a><span class="co"># Sample user-item rating matrix</span></span>
+<span id="cb1-5"><a href=""></a>data <span class="op">=</span> {</span>
+<span id="cb1-6"><a href=""></a>    <span class="st">'User1'</span>: [<span class="dv">5</span>, <span class="dv">3</span>, <span class="dv">0</span>, <span class="dv">1</span>],</span>
+<span id="cb1-7"><a href=""></a>    <span class="st">'User2'</span>: [<span class="dv">4</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>],</span>
+<span id="cb1-8"><a href=""></a>    <span class="st">'User3'</span>: [<span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">5</span>],</span>
+<span id="cb1-9"><a href=""></a>    <span class="st">'User4'</span>: [<span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">4</span>],</span>
+<span id="cb1-10"><a href=""></a>    <span class="st">'User5'</span>: [<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">5</span>, <span class="dv">4</span>],</span>
+<span id="cb1-11"><a href=""></a>}</span>
+<span id="cb1-12"><a href=""></a>df <span class="op">=</span> pd.DataFrame(data, index<span class="op">=</span>[<span class="st">'ItemA'</span>, <span class="st">'ItemB'</span>, <span class="st">'ItemC'</span>, <span class="st">'ItemD'</span>])</span>
+<span id="cb1-13"><a href=""></a>df</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section class="slide level2">
+
+<div class="sourceCode" id="cb2"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href=""></a><span class="co"># Transpose to get item-user matrix</span></span>
+<span id="cb2-2"><a href=""></a>item_user_matrix <span class="op">=</span> df.T</span>
+<span id="cb2-3"><a href=""></a></span>
+<span id="cb2-4"><a href=""></a><span class="co"># Compute cosine similarity between items</span></span>
+<span id="cb2-5"><a href=""></a>item_similarity <span class="op">=</span> pd.DataFrame(</span>
+<span id="cb2-6"><a href=""></a>    cosine_similarity(item_user_matrix.T),</span>
+<span id="cb2-7"><a href=""></a>    index<span class="op">=</span>item_user_matrix.columns,</span>
+<span id="cb2-8"><a href=""></a>    columns<span class="op">=</span>item_user_matrix.columns</span>
+<span id="cb2-9"><a href=""></a>)</span>
+<span id="cb2-10"><a href=""></a></span>
+<span id="cb2-11"><a href=""></a><span class="bu">print</span>(<span class="st">"Item Similarity Matrix:"</span>)</span>
+<span id="cb2-12"><a href=""></a><span class="bu">print</span>(item_similarity)</span>
+<span id="cb2-13"><a href=""></a></span>
+<span id="cb2-14"><a href=""></a><span class="co"># Recommend for User1 (rated ItemA=5, ItemB=3, ItemD=1)</span></span>
+<span id="cb2-15"><a href=""></a>user_ratings <span class="op">=</span> item_user_matrix.loc[<span class="st">'User1'</span>]</span>
+<span id="cb2-16"><a href=""></a>unseen_items <span class="op">=</span> user_ratings[user_ratings <span class="op">==</span> <span class="dv">0</span>].index</span>
+<span id="cb2-17"><a href=""></a></span>
+<span id="cb2-18"><a href=""></a><span class="kw">def</span> predict_score(user_ratings, item_name):</span>
+<span id="cb2-19"><a href=""></a>    sim_scores <span class="op">=</span> item_similarity[item_name]</span>
+<span id="cb2-20"><a href=""></a>    rated_items <span class="op">=</span> user_ratings[user_ratings <span class="op">&gt;</span> <span class="dv">0</span>].index</span>
+<span id="cb2-21"><a href=""></a>    numerator <span class="op">=</span> <span class="bu">sum</span>(user_ratings[item] <span class="op">*</span> sim_scores[item] <span class="cf">for</span> item <span class="kw">in</span> rated_items)</span>
+<span id="cb2-22"><a href=""></a>    denominator <span class="op">=</span> <span class="bu">sum</span>(<span class="bu">abs</span>(sim_scores[item]) <span class="cf">for</span> item <span class="kw">in</span> rated_items)</span>
+<span id="cb2-23"><a href=""></a>    <span class="cf">return</span> numerator <span class="op">/</span> denominator <span class="cf">if</span> denominator <span class="op">!=</span> <span class="dv">0</span> <span class="cf">else</span> <span class="dv">0</span></span>
+<span id="cb2-24"><a href=""></a></span>
+<span id="cb2-25"><a href=""></a><span class="cf">for</span> item <span class="kw">in</span> unseen_items:</span>
+<span id="cb2-26"><a href=""></a>    predicted_score <span class="op">=</span> predict_score(user_ratings, item)</span>
+<span id="cb2-27"><a href=""></a>    <span class="bu">print</span>(<span class="ss">f"Predicted score for </span><span class="sc">{</span>item<span class="sc">}</span><span class="ss">: </span><span class="sc">{</span>predicted_score<span class="sc">:.2f}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="objective" class="slide level2">
+<h2>🎯 Objective</h2>
+<p>Learn how to implement collaborative filtering using <strong>gradient descent</strong>, with side-by-side <strong>mathematical equations</strong> and <strong>Python code</strong>.</p>
+</section>
+<section id="notation" class="slide level2">
+<h2>📘 Notation</h2>
+<ul>
+<li class="fragment"><span class="math display">\[ y^{(i,j)} = \text{ rating given on movie } i \text{ by user } j  \]</span></li>
+<li class="fragment"><span class="math display">\[ r(i,j) = 1 \text{ if user } j \text{ has rated movie } i \text{ otherwise } 0\]</span></li>
+<li class="fragment"><span class="math display">\[w^{(j)}, b^{(j)} = \text{parameters for user j} \]</span></li>
+<li class="fragment"><span class="math display">\[X^{(i)} = \text{ feature vector for movie } i \]</span></li>
+</ul>
+</section>
+<section id="dimensions" class="slide level2">
+<h2>Dimensions</h2>
+<ul>
+<li class="fragment">n_items = number of items (e.g movies, books)</li>
+<li class="fragment">n_users = number of users</li>
+<li class="fragment">n_features = number of features (hyperparameter)</li>
+<li class="fragment"><span class="math display">\[y^{(i,j)} \in \mathbb{R}^{n\_{\text{items}} \times n\_{\text{users}}}\]</span></li>
+<li class="fragment"><span class="math display">\[r(i,j) \in \{0, 1\}^{n\_{\text{items}} \times n\_{\text{users}}}\]</span></li>
+<li class="fragment"><span class="math display">\[ w^{(j)}  \in \mathbb{R}^{n\_{\text{users}} \times n\_{\text{features}}} , b^{(j)}  \in \mathbb{R}^{n\_{\text{users}}} \]</span></li>
+<li class="fragment"><span class="math display">\[ X^{(i)}  \in \mathbb{R}^{n\_{\text{items}} \times n\_{\text{features}}} \]</span></li>
+</ul>
+</section>
+<section id="section" class="slide level2">
+<h2></h2>
+<p>Below is a sample user-item rating matrix for 5 movies rated by 4 users.</p>
+<table class="caption-top">
+<thead>
+<tr class="header">
+<th>Movie Title</th>
+<th>User 1</th>
+<th>User 2</th>
+<th>User 3</th>
+<th>User 4</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>3 Idiots</td>
+<td>5</td>
+<td>4</td>
+<td>5</td>
+<td>3</td>
+</tr>
+<tr class="even">
+<td>Baahubali</td>
+<td>4</td>
+<td>5</td>
+<td>4</td>
+<td>NA</td>
+</tr>
+<tr class="odd">
+<td>Dangal</td>
+<td>5</td>
+<td>NA</td>
+<td>3</td>
+<td>4</td>
+</tr>
+<tr class="even">
+<td>RRR</td>
+<td>3</td>
+<td>4</td>
+<td>NA</td>
+<td>5</td>
+</tr>
+<tr class="odd">
+<td>Pathaan</td>
+<td>NA</td>
+<td>2</td>
+<td>3</td>
+<td>4</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li class="fragment">Ratings range from 1 (worst) to 5 (best).</li>
+<li class="fragment"><strong>NA</strong> indicates that the user did not rate the movie.</li>
+</ul>
+</section>
+<section id="section-1" class="slide level2">
+<h2></h2>
+<p><span class="math display">\[ r(i,j) = 1 \text{ if user } j \text{ has rated movie } i \text{ otherwise } 0\]</span> <span class="math display">\[r(i,j) \in \{0, 1\}^{n\_{\text{items}} \times n\_{\text{users}}}\]</span></p>
+<table class="caption-top" style="width:100%;">
+<colgroup>
+<col style="width: 44%">
+<col style="width: 13%">
+<col style="width: 13%">
+<col style="width: 13%">
+<col style="width: 13%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Movie Title</th>
+<th>User 1</th>
+<th>User 2</th>
+<th>User 3</th>
+<th>User 4</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>3 Idiots</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr class="even">
+<td>Baahubali</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td><span style="color:red;">0</span></td>
+</tr>
+<tr class="odd">
+<td>Dangal</td>
+<td>1</td>
+<td><span style="color:red;">0</span></td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr class="even">
+<td>RRR</td>
+<td>1</td>
+<td>1</td>
+<td><span style="color:red;">0</span></td>
+<td>1</td>
+</tr>
+<tr class="odd">
+<td>Pathaan</td>
+<td><span style="color:red;">0</span></td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+</tr>
+</tbody>
+</table>
 
 </section>
     </div>
@@ -311,7 +585,7 @@ Manoj Khara
         previewLinks: false,
 
         // Transition style (none/fade/slide/convex/concave/zoom)
-        transition: 'none',
+        transition: 'slide',
 
         // Transition speed (default/fast/slow)
         transitionSpeed: 'default',
